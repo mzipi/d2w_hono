@@ -5,9 +5,7 @@ import { processManifest } from './services/processManifest.ts'
 
 const app = new Hono()
 
-if (process.env.NODE_ENV !== 'production') {
-    await processManifest();
-}
+await processManifest();
 
 app.route('/api', apiRoutes);
 
