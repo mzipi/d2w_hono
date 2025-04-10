@@ -1,26 +1,28 @@
 import { getDefinition } from './definitionAccessor.ts';
 
-const breakerType = await getDefinition('DestinyBreakerTypeDefinition');
-const collectibles = await getDefinition('DestinyCollectibleDefinition');
-const damageType = await getDefinition('DestinyDamageTypeDefinition');
-const equipmentSlot = await getDefinition('DestinyEquipmentSlotDefinition');
-const inventoryItems = await getDefinition('DestinyInventoryItemDefinition');
-const itemCategory = await getDefinition('DestinyItemCategoryDefinition');
-const plugSets = await getDefinition('DestinyPlugSetDefinition');
-const presentationNode = await getDefinition('DestinyPresentationNodeDefinition');
-const stats = await getDefinition('DestinyStatDefinition');
-const statGroup = await getDefinition('DestinyStatGroupDefinition');
+// const stats = await getDefinition('DestinyStatDefinition');
+// const statGroup = await getDefinition('DestinyStatGroupDefinition');
 
 let weapons = {};
 let perks = {};
+let plugSets = {};
 
-for (const hash in inventoryItems) {
-    const item = inventoryItems[hash];
-    if (item.itemType === 3) weapons[hash] = item;
-    if (item.itemType === 19) perks[hash] = item;
+export async function initDefinitions() {
+    plugSets = await getDefinition('DestinyPlugSetDefinition');
+    const inventoryItems = await getDefinition('DestinyInventoryItemDefinition');
+    
+    for (const hash in inventoryItems) {
+        const item = inventoryItems[hash];
+        if (item.itemType === 3) weapons[hash] = item;
+        if (item.itemType === 19) perks[hash] = item;
+    }
 }
 
 export async function searchTraitHash(traitName) {
+    if (Object.keys(perks).length === 0) {
+        await initDefinitions();
+    }
+
     const normalizedTraitName = traitName
         .normalize("NFD")
         .replace(/[̀-ͯ]/g, "")
@@ -44,7 +46,7 @@ export async function findWeaponsByTraits(traitHash1, traitHash2) {
     Object.entries(weapons).forEach(([weaponHash, weapon]) => {
         const socketEntry3Hash = weapon.sockets?.socketEntries[3]?.randomizedPlugSetHash;
         const socketEntry4Hash = weapon.sockets?.socketEntries[4]?.randomizedPlugSetHash;
-
+        
         const plugSet3 = plugSets[socketEntry3Hash];
         const plugSet4 = plugSets[socketEntry4Hash];
 
@@ -100,6 +102,8 @@ export async function findPlugItemByPlugSet(plugSetsFound) {
 }
 
 export async function filterCollectibles(weaponsFound) {
+    const collectibles = await getDefinition('DestinyCollectibleDefinition');
+
     const collectibleHashes = new Set(
         Object.values(weaponsFound)
             .map(weapon => weapon.collectibleHash)
@@ -119,6 +123,8 @@ export async function filterCollectibles(weaponsFound) {
 }
 
 export async function filterDamageTypes(weaponsFound) {
+    const damageType = await getDefinition('DestinyDamageTypeDefinition');
+
     const damageTypeHashes = Object.values(weaponsFound)
         .map(weapon => weapon.defaultDamageTypeHash)
         .filter(damageTypeHash => damageTypeHash !== undefined);
@@ -140,6 +146,7 @@ export async function filterDamageTypes(weaponsFound) {
 }
 
 export async function filterequipmentSlot(weaponsFound) {
+    const equipmentSlot = await getDefinition('DestinyEquipmentSlotDefinition');
     const filteredequipmentSlot = {};
 
     for (const weapon of Object.values(weaponsFound)) {
@@ -160,6 +167,8 @@ export async function filterequipmentSlot(weaponsFound) {
 }
 
 export async function filterBreakerTypes(weaponsFound) {
+    const breakerType = await getDefinition('DestinyBreakerTypeDefinition');
+
     for (const weapon of Object.values(weaponsFound)) {
         if (weapon.breakerTypeHash) {
             console.log("Breaker encontrado:", breakerType.displayProperties?.name || "Sin nombre");
@@ -172,6 +181,7 @@ export async function filterBreakerTypes(weaponsFound) {
 }
 
 export async function findWeaponsByCategory(weaponsFound) {
+    const itemCategory = await getDefinition('DestinyItemCategoryDefinition');
     const filteredCategories = {};
 
     Object.values(weaponsFound).forEach(weapon => {
@@ -193,7 +203,8 @@ export async function findWeaponsByCategory(weaponsFound) {
     return filteredCategories;
 }
 
-export function filterItemPresentation(collectiblesFound) {
+export async function filterItemPresentation(collectiblesFound) {
+    const presentationNode = await getDefinition('DestinyPresentationNodeDefinition');
     let parentNodeHashes = Object.values(collectiblesFound).flatMap(collectible => collectible.parentNodeHashes);
     const result = {};
     const validHashes = new Set([1731162900, 638914517, 3686962409]);
