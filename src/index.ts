@@ -1,7 +1,7 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { router as apiRoutes } from './routes/api.ts'
-import { processManifest } from './services/processManifest.ts'
+import { processManifest } from './utils/processManifest.ts'
 import dotenv from 'dotenv';
 
 dotenv.config();

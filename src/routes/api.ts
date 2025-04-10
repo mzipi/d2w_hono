@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import main from "../services/search.ts";
+import main from "../services/mainService.ts";
 
 export const router = new Hono();
 
