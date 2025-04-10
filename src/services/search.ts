@@ -3,20 +3,15 @@ import { getDefinition } from './definitionAccessor.ts';
 // const stats = await getDefinition('DestinyStatDefinition');
 // const statGroup = await getDefinition('DestinyStatGroupDefinition');
 
-let weapons = {};
-let perks = {};
-let plugSets = {};
 
 export default async function main(trait1, trait2) {
-    const inventoryItems = await initDefinitions();
-
-    processInventoryItems(inventoryItems);
-    
-    const traitHash1 = await searchTraitHash(trait1);
-    const traitHash2 = await searchTraitHash(trait2);
-    const weaponsFound = await findWeaponsByTraits(traitHash1, traitHash2);
-    const plugSetsFound = await findPlugSetsByWeapon(weaponsFound);
-    const plugItemFound = await findPlugItemByPlugSet(plugSetsFound);
+    const plugSets = await getDefinition('DestinyPlugSetDefinition');
+    const { weapons, perks } = await processInventoryItems();
+    const traitHash1 = await searchTraitHash(trait1, perks);
+    const traitHash2 = await searchTraitHash(trait2, perks);
+    const weaponsFound = await findWeaponsByTraits(traitHash1, traitHash2, weapons, plugSets);
+    const plugSetsFound = await findPlugSetsByWeapon(weaponsFound, plugSets);
+    const plugItemFound = await findPlugItemByPlugSet(plugSetsFound, perks);
     const collectiblesFound = await filterCollectibles(weaponsFound);
     const damageTypesFound = await filterDamageTypes(weaponsFound);
     const equipmentSlotFound = await filterequipmentSlot(weaponsFound);
@@ -28,22 +23,22 @@ export default async function main(trait1, trait2) {
     // const response = filterWeaponData(*);
 }
 
-export async function initDefinitions() {
-    plugSets = await getDefinition('DestinyPlugSetDefinition');
-    const inventoryItems = await getDefinition('DestinyInventoryItemDefinition');
+async function processInventoryItems() {
+    let weapons = {};
+    let perks = {};
     
-    return inventoryItems;
-}
+    const inventoryItems = await getDefinition('DestinyInventoryItemDefinition');
 
-function processInventoryItems(inventoryItems) {
     for (const hash in inventoryItems) {
         const item = inventoryItems[hash];
         if (item.itemType === 3) weapons[hash] = item;
         if (item.itemType === 19) perks[hash] = item;
     }
+
+    return { weapons, perks };
 }
 
-export async function searchTraitHash(traitName) {
+export async function searchTraitHash(traitName, perks) {
     const normalizedTraitName = traitName
         .normalize("NFD")
         .replace(/[̀-ͯ]/g, "")
@@ -61,7 +56,7 @@ export async function searchTraitHash(traitName) {
     return trait.hash;
 }
 
-export async function findWeaponsByTraits(traitHash1, traitHash2) {
+export async function findWeaponsByTraits(traitHash1, traitHash2, weapons, plugSets) {
     const matchingWeapons = {};
 
     Object.entries(weapons).forEach(([weaponHash, weapon]) => {
@@ -90,7 +85,7 @@ export async function findWeaponsByTraits(traitHash1, traitHash2) {
     return matchingWeapons;
 }
 
-export async function findPlugSetsByWeapon(weaponsFound) {
+export async function findPlugSetsByWeapon(weaponsFound, plugSets) {
     const indices = [0, 1, 2, 3, 4, 6, 7, 8];
     const result = {};
 
@@ -108,7 +103,7 @@ export async function findPlugSetsByWeapon(weaponsFound) {
     return result;
 }
 
-export async function findPlugItemByPlugSet(plugSetsFound) {
+export async function findPlugItemByPlugSet(plugSetsFound, perks) {
     const result = {};
 
     Object.entries(plugSetsFound).forEach(([plugSetHash, plugSet]) => {
