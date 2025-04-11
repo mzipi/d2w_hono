@@ -29,7 +29,7 @@ export default async function main(trait1, trait2, currentPage) {
     const breakerTypeFound = await filterBreakerTypes(weaponsFound);
     const categoriesFound = await findWeaponsByCategory(weaponsFound);
     const ammoFound = await filterItemPresentation(collectiblesFound);
-    const statGroupFound = filterStatGroupHashes(weaponsFound);
+    const statGroupFound = await filterStatGroupHashes(weaponsFound);
     const itemsPerPage = 1;
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;

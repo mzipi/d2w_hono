@@ -26,10 +26,6 @@ export async function searchTraitHash(traitName, perks) {
         item.itemTypeDisplayName === "Rasgos"
     );
 
-    // if (trait.hash) {
-    //     console.log(`${traitName}: ${trait.hash}`);
-    // }
-
     return trait.hash;
 }
 
@@ -56,8 +52,6 @@ export async function findWeaponsByTraits(traitHash1, traitHash2, weapons, plugS
             matchingWeapons[weaponHash] = weapon;
         }
     });
-
-    // console.log("Cantidad de armas encontradas:", Object.keys(matchingWeapons).length);
 
     return matchingWeapons;
 }
@@ -110,8 +104,6 @@ export async function filterCollectibles(weaponsFound) {
             return result;
         }, {});
 
-    // console.log("Cantidad de coleccionables encontrados:", Object.keys(filteredCollectibles).length);
-
     return filteredCollectibles;
 }
 
@@ -129,12 +121,6 @@ export async function filterDamageTypes(weaponsFound) {
             return result;
         }, {});
 
-    // console.log("Tipo de daño de las armas encontradas:",
-    //     Object.values(filteredDamageTypes)
-    //         .map(damage => damage.displayProperties?.name)
-    //         .join(", ")
-    // );
-
     return filteredDamageTypes;
 }
 
@@ -150,12 +136,6 @@ export async function filterequipmentSlot(weaponsFound) {
         }
     }
 
-    // console.log("Slot de las armas encontradas:",
-    //     Object.values(filteredequipmentSlot)
-    //         .map(slot => slot.displayProperties?.name)
-    //         .join(", ")
-    // );
-
     return filteredequipmentSlot;
 }
 
@@ -164,12 +144,10 @@ export async function filterBreakerTypes(weaponsFound) {
 
     for (const weapon of Object.values(weaponsFound)) {
         if (weapon.breakerTypeHash) {
-            // console.log("Breaker encontrado:", breakerType.displayProperties?.name || "Sin nombre");
             return breakerType;
         }
     }
 
-    // console.log("Breaker encontrado: NA");
     return { displayProperties: { name: "NA" } };
 }
 
@@ -186,12 +164,6 @@ export async function findWeaponsByCategory(weaponsFound) {
             }
         });
     });
-
-    // console.log("Categorías de las armas encontradas:",
-    //     Object.values(filteredCategories)
-    //         .map(category => category.displayProperties?.name)
-    //         .join(", ")
-    // );
 
     return filteredCategories;
 }
@@ -216,12 +188,6 @@ export async function filterItemPresentation(collectiblesFound) {
     const filteredResult = Object.fromEntries(
         Object.entries(result).filter(([hash]) => validHashes.has(Number(hash)))
     );
-
-    // console.log("Tipo de munición:",
-    //     Object.values(filteredResult)
-    //         .map(category => category.displayProperties?.name)
-    //         .join(", ")
-    // );
 
     return filteredResult;
 }
