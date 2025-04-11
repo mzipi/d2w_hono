@@ -11,6 +11,11 @@ const app = new Hono()
 
 await processManifest();
 
+app.use('*', (c, next) => {
+    console.log(`Petición ${c.req.method} a ${c.req.url}`);
+    return next();
+});
+
 app.use('*', cors())
 // app.use(
 //     '*',

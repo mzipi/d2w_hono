@@ -32,7 +32,7 @@ export const processManifest = async () => {
             await saveDefinitionsToDisk(definitions);
         }
     } else {
-        console.log("Entrando en producción. Guardando definiciones en memoria...");
+        console.log("Guardando definiciones en memoria");
         await saveDefinitionsToMemory(definitions);
     }
 };
