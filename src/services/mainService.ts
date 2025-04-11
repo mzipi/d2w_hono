@@ -15,7 +15,7 @@ import {
     filterStatGroupHashes
 } from '../helpers/helpers.ts';
 
-export default async function main(trait1, trait2) {
+export default async function main(trait1, trait2, currentPage) {
     const plugSets = await getDefinition('DestinyPlugSetDefinition');
     const { weapons, perks } = await processInventoryItems();
     const traitHash1 = await searchTraitHash(trait1, perks);
@@ -30,6 +30,9 @@ export default async function main(trait1, trait2) {
     const categoriesFound = await findWeaponsByCategory(weaponsFound);
     const ammoFound = await filterItemPresentation(collectiblesFound);
     const statGroupFound = filterStatGroupHashes(weaponsFound);
+    const itemsPerPage = 1;
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
     const formattedResponse = formatResponse({
         weaponsFound,
         plugSetsFound,
@@ -42,70 +45,15 @@ export default async function main(trait1, trait2) {
         ammoFound,
         statGroupFound,
     });
-    // const response = filterWeaponData(*);
+    const weaponKeys = Object.keys(formattedResponse);
+    const keysForCurrentPage = weaponKeys.slice(startIndex, endIndex);
+    const paginatedWeapons = keysForCurrentPage.reduce((acc, key) => {
+        acc[key] = formattedResponse[key];
+        return acc;
+    }, {});
 
-    return formattedResponse;
+    return {
+        paginatedWeapons,
+        total: Object.keys(formattedResponse).length
+    };
 }
-
-// async function filterWeaponData(enrichedWeapons) {
-//     return enrichedWeapons.map(item => ({
-//         itemType: item.itemType,
-//         inventory: { tierTypeName: item.inventory?.tierTypeName },
-//         displayProperties: {
-//             name: item.displayProperties?.name,
-//             icon: `https://www.bungie.net${item.displayProperties.icon}`
-//         },
-//         iconWatermark: `https://www.bungie.net${item.iconWatermark}`,
-//         sockets: item.sockets
-//             ? {
-//                 socketEntries: item.sockets.socketEntries.map(socket => {
-//                     const selectedPlugSet = socket.randomizedPlugSet ?? socket.reusablePlugSet;
-
-//                     if (!selectedPlugSet) return undefined;
-
-//                     return {
-//                         traits: selectedPlugSet.reusablePlugItems
-//                             .map(plugItem => {
-//                                 if (!plugItem?.plugItem || !plugItem.plugItem.displayProperties) return null;
-
-//                                 return {
-//                                     plugItem: {
-//                                         displayProperties: {
-//                                             name: plugItem.plugItem.displayProperties.name || "Nombre no disponible",
-//                                             icon: plugItem.plugItem.displayProperties.icon
-//                                                 ? `https://www.bungie.net${plugItem.plugItem.displayProperties.icon}`
-//                                                 : null,
-//                                             description: plugItem.plugItem.displayProperties.description || "",
-//                                         },
-//                                         itemTypeDisplayName: plugItem.plugItem.itemTypeDisplayName || "Tipo Desconocido",
-//                                     },
-//                                 };
-//                             })
-//                             .filter(Boolean),
-
-//                     };
-//                 }).filter(Boolean),
-//             }
-//             : undefined,
-//         collectible: {
-//             displayProperties: {
-//                 icon: `https://www.bungie.net${item.collectible?.displayProperties.icon}`
-//             },
-//             sourceString: item.collectible?.sourceString
-//         },
-//         screenshot: item.screenshot,
-//         itemTypeDisplayName: item.itemTypeDisplayName,
-//         flavorText: item.flavorText,
-//         stats: {
-//             statGroupHash: item.stats?.statGroupHash,
-//             stats: item.stats?.stats
-//         },
-//         equippingBlock: {
-//             equipmentSlotTypeHash: item.equippingBlock?.equipmentSlotTypeHash,
-//             ammoType: item.equippingBlock?.ammoType
-//         },
-//         itemCategoryHashes: item.itemCategoryHashes,
-//         damageTypeHashes: item.damageTypeHashes,
-//         hash: item.hash,
-//     }));
-// }
