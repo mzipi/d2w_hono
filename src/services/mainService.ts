@@ -1,4 +1,5 @@
 import { getDefinition } from '../utils/definitionAccessor.ts';
+import formatResponse from '../formatters/responseFormatter.ts';
 import {
     processInventoryItems,
     searchTraitHash,
@@ -26,11 +27,24 @@ export default async function main(trait1, trait2) {
     const damageTypesFound = await filterDamageTypes(weaponsFound);
     const equipmentSlotFound = await filterequipmentSlot(weaponsFound);
     const breakerTypeFound = await filterBreakerTypes(weaponsFound);
-    const categories = await findWeaponsByCategory(weaponsFound);
-    const presentation = await filterItemPresentation(collectiblesFound);
+    const categoriesFound = await findWeaponsByCategory(weaponsFound);
+    const ammoFound = await filterItemPresentation(collectiblesFound);
     const statGroupFound = filterStatGroupHashes(weaponsFound);
-
+    const formattedResponse = formatResponse({
+        weaponsFound,
+        plugSetsFound,
+        plugItemFound,
+        collectiblesFound,
+        damageTypesFound,
+        equipmentSlotFound,
+        breakerTypeFound,
+        categoriesFound,
+        ammoFound,
+        statGroupFound,
+    });
     // const response = filterWeaponData(*);
+
+    return formattedResponse;
 }
 
 // async function filterWeaponData(enrichedWeapons) {

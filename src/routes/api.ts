@@ -11,11 +11,9 @@ router.get("/", async (c) => {
             return c.json({ error: "Falta información" });
         }
 
-        const result = await main(trait1, trait2);
+        const response = await main(trait1, trait2);
 
-        return c.json({
-            message: `Recibido: perk1=${trait1}, perk2=${trait2}`,
-        });
+        return c.json(response);
     } catch (error) {
         console.error("Error detallado:", error);
         return c.json({ error: "Error al procesar la solicitud" });
