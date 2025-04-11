@@ -1,3 +1,5 @@
+import { filterStatGroupHashes, filterItemPresentation, findPlugSetsByWeapon, findPlugItemByPlugSet } from "../helpers/helpers.ts"
+
 export default function formatResponse(data) {
     const {
         weaponsFound,
@@ -21,6 +23,7 @@ export default function formatResponse(data) {
         const collectible = collectiblesFound[weapon.collectibleHash];
         const damageType = damageTypesFound[weapon.defaultDamageTypeHash];
         const equipmentSlot = equipmentSlotFound[weapon.equippingBlock.equipmentSlotTypeHash];
+        const breakerType = breakerTypeFound[weapon.breakerTypeHash];
 
         const categories = [];
         for (const categoryHash of weapon.itemCategoryHashes || []) {
@@ -35,6 +38,7 @@ export default function formatResponse(data) {
             collectible,
             damageType,
             equipmentSlot,
+            breakerType,
             categories
         };
     }
