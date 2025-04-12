@@ -14,14 +14,6 @@ export default function formatResponse(data) {
 
     const enrichedWeapons = {};
 
-    const ammoTypeMap = {
-        0: "Ninguna",
-        1: "Primaria",
-        2: "Especial",
-        3: "Pesada",
-        4: "Desconocida",
-    };
-
     for (const hash in weaponsFound) {
         const weapon = weaponsFound[hash];
 
@@ -69,11 +61,13 @@ export default function formatResponse(data) {
             }
         });
 
-        const sockets = [];
+        const perks = [];
+        const mods = [];
 
-        const allowedIndices = [0, 1, 2, 3, 4, 8, 6, 7, 12, 13];
+        const perkIndices = [1, 2, 3, 4, 8];
+        const modIndices = [0, 6, 7, 12, 13];
 
-        allowedIndices.forEach((index) => {
+        const processSocket = (index, targetArray, markAsMod) => {
             const socketEntry = weapon.sockets.socketEntries[index];
             if (!socketEntry) {
                 return;
@@ -82,12 +76,11 @@ export default function formatResponse(data) {
             const plugSetHash = socketEntry.randomizedPlugSetHash || socketEntry.reusablePlugSetHash;
             const plugSet = plugSetsFound[plugSetHash];
 
-            const perks = [];
+            const list = [];
 
             if (plugSet && plugSet.reusablePlugItems) {
                 for (const plug of plugSet.reusablePlugItems) {
                     const plugItem = plugItemFound[plug.plugItemHash];
-
                     if (!plugItem) {
                         continue;
                     }
@@ -103,12 +96,24 @@ export default function formatResponse(data) {
                         }
                     }
 
-                    perks.push(plugItem);
+                    if (markAsMod) {
+                        plugItem.wrappedInDiv = true;
+                    }
+
+                    list.push(plugItem);
                 }
             }
 
-            sockets.push(perks);
-        });
+            targetArray.push(list);
+        };
+
+        for (const index of perkIndices) {
+            processSocket(index, perks, false);
+        }
+
+        for (const index of modIndices) {
+            processSocket(index, mods, true);
+        }
 
         enrichedWeapons[hash] = {
             weapon: { ...weapon },
@@ -119,7 +124,10 @@ export default function formatResponse(data) {
             categories,
             ammo,
             stats,
-            sockets
+            sockets: {
+                perks,
+                mods
+            }
         };
     }
 
