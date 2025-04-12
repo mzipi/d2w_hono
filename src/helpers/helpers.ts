@@ -57,14 +57,17 @@ export async function findWeaponsByTraits(traitHash1, traitHash2, weapons, plugS
 }
 
 export async function findPlugSetsByWeapon(weaponsFound, plugSets) {
-    const indices = [0, 1, 2, 3, 4, 6, 7, 8];
+    const indices = [0, 1, 2, 3, 4, 6, 7, 8, 12, 13];
     const result = {};
 
     Object.values(weaponsFound).forEach(weapon => {
         const socketEntries = weapon.sockets.socketEntries;
 
         indices.forEach(index => {
-            const plugSetHash = socketEntries[index].reusablePlugSetHash || socketEntries[index].randomizedPlugSetHash;
+            const entry = socketEntries[index];
+            if (!entry) return;
+
+            const plugSetHash = entry.randomizedPlugSetHash || entry.reusablePlugSetHash;
             if (plugSetHash && plugSets[plugSetHash]) {
                 result[plugSetHash] = plugSets[plugSetHash];
             }
@@ -79,8 +82,17 @@ export async function findPlugItemByPlugSet(plugSetsFound, perks) {
 
     Object.entries(plugSetsFound).forEach(([plugSetHash, plugSet]) => {
         plugSet.reusablePlugItems.forEach(item => {
-            if (perks[item.plugItemHash] && perks[item.plugItemHash].inventory.tierTypeName === "Común") {
-                result[item.plugItemHash] = perks[item.plugItemHash];
+            const perk = perks[item.plugItemHash];
+            if (perk) {
+                if (perk.inventory.tierType !== 3) {
+                    result[item.plugItemHash] = perk;
+                } else {
+                    result[item.plugItemHash] = {
+                        ...perk,
+                        className: 'rasgo-mejorado',
+                        wrappedInDiv: true,
+                    };
+                }
             }
         });
     });

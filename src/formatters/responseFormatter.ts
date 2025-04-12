@@ -12,7 +12,6 @@ export default function formatResponse(data) {
         statGroupFound,
     } = data;
 
-
     const enrichedWeapons = {};
 
     const ammoTypeMap = {
@@ -70,28 +69,46 @@ export default function formatResponse(data) {
             }
         });
 
-        const perks = []
+        const sockets = [];
 
-        for (const socketEntry of weapon.sockets.socketEntries) {
-            const plugSetHash = socketEntry.randomizedPlugSetHash || socketEntry.reusablePlugSetHash
+        const allowedIndices = [0, 1, 2, 3, 4, 8, 6, 7, 12, 13];
 
-            if (!plugSetHash) continue
+        allowedIndices.forEach((index) => {
+            const socketEntry = weapon.sockets.socketEntries[index];
+            if (!socketEntry) {
+                return;
+            }
 
-            const plugSet = plugSetsFound[plugSetHash]
+            const plugSetHash = socketEntry.randomizedPlugSetHash || socketEntry.reusablePlugSetHash;
+            const plugSet = plugSetsFound[plugSetHash];
 
-            if (!plugSet || !plugSet.reusablePlugItems) continue
+            const perks = [];
 
-            for (const plug of plugSet.reusablePlugItems) {
-                const plugItem = plugItemFound[plug.plugItemHash]
+            if (plugSet && plugSet.reusablePlugItems) {
+                for (const plug of plugSet.reusablePlugItems) {
+                    const plugItem = plugItemFound[plug.plugItemHash];
 
-                if (plugItem) {
-                    perks.push(plugItem)
+                    if (!plugItem) {
+                        continue;
+                    }
+
+                    if (index === 7) {
+                        const weaponStats = Object.keys(weapon.stats.stats);
+                        const isValidMasterwork = plugItem.investmentStats.some(stat =>
+                            weaponStats.includes(String(stat.statTypeHash))
+                        );
+
+                        if (!isValidMasterwork) {
+                            continue;
+                        }
+                    }
+
+                    perks.push(plugItem);
                 }
             }
-        }
 
-        console.log(perks);
-        
+            sockets.push(perks);
+        });
 
         enrichedWeapons[hash] = {
             weapon: { ...weapon },
@@ -102,7 +119,7 @@ export default function formatResponse(data) {
             categories,
             ammo,
             stats,
-            perks
+            sockets
         };
     }
 
