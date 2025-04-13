@@ -3,6 +3,7 @@ export default function formatResponse(data) {
         weaponsFound,
         plugSetsFound,
         plugItemFound,
+        masterWorks,
         collectiblesFound,
         damageTypesFound,
         equipmentSlotFound,
@@ -63,9 +64,17 @@ export default function formatResponse(data) {
 
         const perks = [];
         const mods = [];
+        const masterworks = [];
+        const intrinsic = [];
+        const deepsight = [];
+        const levelBoost = [];
 
         const perkIndices = [1, 2, 3, 4, 8];
-        const modIndices = [0, 6, 7, 12, 13];
+        const modsIndex = 6;
+        const masterworksIndex = 7;
+        const intrinsicIndex = 0;
+        const deepsightIndex = 12;
+        const levelBoostIndex = 13;
 
         const processSocket = (index, targetArray, markAsMod) => {
             const socketEntry = weapon.sockets.socketEntries[index];
@@ -85,17 +94,6 @@ export default function formatResponse(data) {
                         continue;
                     }
 
-                    if (index === 7) {
-                        const weaponStats = Object.keys(weapon.stats.stats);
-                        const isValidMasterwork = plugItem.investmentStats.some(stat =>
-                            weaponStats.includes(String(stat.statTypeHash))
-                        );
-
-                        if (!isValidMasterwork) {
-                            continue;
-                        }
-                    }
-
                     if (markAsMod) {
                         plugItem.wrappedInDiv = true;
                     }
@@ -107,13 +105,33 @@ export default function formatResponse(data) {
             targetArray.push(list);
         };
 
+        // const socketEntry = weapon.sockets.socketEntries[7];
+
+        // if (socketEntry && socketEntry.reusablePlugItems) {
+        //     const validHashes = new Set((masterWorks[hash] || []).map(p => p.hash));
+
+        //     for (const plug of socketEntry.reusablePlugItems) {
+        //         if (validHashes.has(plug.plugItemHash)) {
+        //             const plugItem = plugItemFound[plug.plugItemHash];
+        //             if (plugItem) {
+        //                 masterworks.push(plugItem);
+        //             }
+        //         }
+        //     }
+        // }
+
         for (const index of perkIndices) {
             processSocket(index, perks, false);
         }
 
-        for (const index of modIndices) {
-            processSocket(index, mods, true);
-        }
+        processSocket(masterworksIndex, masterworks, true);
+        processSocket(modsIndex, mods, true);
+        processSocket(intrinsicIndex, intrinsic, true);
+        processSocket(deepsightIndex, deepsight, true);
+        processSocket(levelBoostIndex, levelBoost, true);
+
+        console.log(masterworks);
+        
 
         enrichedWeapons[hash] = {
             weapon: { ...weapon },
@@ -126,7 +144,11 @@ export default function formatResponse(data) {
             stats,
             sockets: {
                 perks,
-                mods
+                mods,
+                masterworks,
+                intrinsic,
+                deepsight,
+                levelBoost
             }
         };
     }

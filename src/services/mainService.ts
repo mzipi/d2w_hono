@@ -6,6 +6,7 @@ import {
     findWeaponsByTraits,
     findPlugSetsByWeapon,
     findPlugItemByPlugSet,
+    filterValidMasterworksFromWeapons,
     filterCollectibles,
     filterDamageTypes,
     filterequipmentSlot,
@@ -23,6 +24,7 @@ export default async function main(trait1, trait2, currentPage) {
     const weaponsFound = await findWeaponsByTraits(traitHash1, traitHash2, weapons, plugSets);
     const plugSetsFound = await findPlugSetsByWeapon(weaponsFound, plugSets);
     const plugItemFound = await findPlugItemByPlugSet(plugSetsFound, perks);
+    const masterWorks = await filterValidMasterworksFromWeapons(weaponsFound, plugSetsFound, plugItemFound);
     const collectiblesFound = await filterCollectibles(weaponsFound);
     const damageTypesFound = await filterDamageTypes(weaponsFound);
     const equipmentSlotFound = await filterequipmentSlot(weaponsFound);
@@ -37,6 +39,7 @@ export default async function main(trait1, trait2, currentPage) {
         weaponsFound,
         plugSetsFound,
         plugItemFound,
+        masterWorks,
         collectiblesFound,
         damageTypesFound,
         equipmentSlotFound,
