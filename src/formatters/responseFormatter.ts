@@ -94,6 +94,13 @@ export default function formatResponse(data) {
                         continue;
                     }
 
+                    if (index === 7) {
+                        const validHashes = new Set((masterWorks || []).map(mw => mw.hash));
+                        if (!validHashes.has(plugItem.hash)) {
+                            continue;
+                        }
+                    }
+
                     if (markAsMod) {
                         plugItem.wrappedInDiv = true;
                     }
@@ -105,20 +112,18 @@ export default function formatResponse(data) {
             targetArray.push(list);
         };
 
-        // const socketEntry = weapon.sockets.socketEntries[7];
+        const validMasterworks = masterWorks[hash] || [];
 
-        // if (socketEntry && socketEntry.reusablePlugItems) {
-        //     const validHashes = new Set((masterWorks[hash] || []).map(p => p.hash));
+        validMasterworks.forEach(masterwork => {
+            const weaponStats = Object.keys(weapon.stats.stats);
+            const isValidMasterwork = masterwork.investmentStats?.some(stat =>
+                weaponStats.includes(String(stat.statTypeHash))
+            );
 
-        //     for (const plug of socketEntry.reusablePlugItems) {
-        //         if (validHashes.has(plug.plugItemHash)) {
-        //             const plugItem = plugItemFound[plug.plugItemHash];
-        //             if (plugItem) {
-        //                 masterworks.push(plugItem);
-        //             }
-        //         }
-        //     }
-        // }
+            if (isValidMasterwork) {
+                masterworks.push(masterwork);
+            }
+        });
 
         for (const index of perkIndices) {
             processSocket(index, perks, false);
@@ -129,9 +134,6 @@ export default function formatResponse(data) {
         processSocket(intrinsicIndex, intrinsic, true);
         processSocket(deepsightIndex, deepsight, true);
         processSocket(levelBoostIndex, levelBoost, true);
-
-        console.log(masterworks);
-        
 
         enrichedWeapons[hash] = {
             weapon: { ...weapon },

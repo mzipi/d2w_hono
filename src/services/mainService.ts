@@ -56,7 +56,7 @@ export default async function main(trait1, trait2, currentPage) {
     }, {});
 
     return {
+        total: Object.keys(formattedResponse).length,
         paginatedWeapons,
-        total: Object.keys(formattedResponse).length
     };
 }

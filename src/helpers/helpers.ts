@@ -101,7 +101,8 @@ export async function findPlugItemByPlugSet(plugSetsFound, perks) {
 }
 
 export function filterValidMasterworksFromWeapons(weaponsFound, plugSetsFound, plugItemFound) {
-    const validMasterworks = {};
+    const validMasterworksSet = new Set();
+    const validMasterworks = [];
 
     for (const weapon of Object.values(weaponsFound)) {
         const weaponStatHashes = Object.keys(weapon.stats.stats);
@@ -109,20 +110,22 @@ export function filterValidMasterworksFromWeapons(weaponsFound, plugSetsFound, p
 
         for (const entry of socketEntries) {
             const plugSetHash = entry.randomizedPlugSetHash || entry.reusablePlugSetHash;
-            if (!plugSetHash || !plugSetsFound[plugSetHash]) continue;
+            if (!plugSetHash) continue;
 
             const plugSet = plugSetsFound[plugSetHash];
+            if (!plugSet?.reusablePlugItems) continue;
 
             for (const item of plugSet.reusablePlugItems) {
                 const plug = plugItemFound[item.plugItemHash];
                 if (!plug || plug.redacted || plug.blacklisted) continue;
 
                 const matchesStat = plug.investmentStats?.some(stat =>
-                    weaponStatHashes.includes(stat.statTypeHash.toString())
+                    weaponStatHashes.includes(String(stat.statTypeHash))
                 );
 
-                if (matchesStat) {
-                    validMasterworks[plug.hash] = plug;
+                if (matchesStat && !validMasterworksSet.has(plug.hash)) {
+                    validMasterworksSet.add(plug.hash);
+                    validMasterworks.push(plug);
                 }
             }
         }
@@ -130,6 +133,7 @@ export function filterValidMasterworksFromWeapons(weaponsFound, plugSetsFound, p
 
     return validMasterworks;
 }
+
 
 export async function filterCollectibles(weaponsFound) {
     const collectibles = await getDefinition('DestinyCollectibleDefinition');
