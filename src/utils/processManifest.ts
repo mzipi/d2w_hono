@@ -13,26 +13,28 @@ export const processManifest = async () => {
     const currentPaths = await fetchJsonWorldComponentContentPaths();
     if (!currentPaths) {
         console.error('No se pudo obtener el manifiesto');
-        return;
+        return {};
     }
 
     const definitions = await fetchDefinitions(currentPaths);
 
     if (process.env.NODE_ENV === 'development') {
         console.log('Entrando en desarrollo. Guardando definiciones en disco...');
-        
+
         const changed = await hasManifestChanged(currentPaths);
 
         if (!changed) {
             console.log('El manifiesto no ha cambiado. Nada que hacer.');
-            return;
+            return definitions;
         } else {
             console.log('El manifiesto cambió. Guardando definiciones en disco...');
             await saveManifest(currentPaths);
             await saveDefinitionsToDisk(definitions);
+            return definitions;
         }
     } else {
         console.log("Guardando definiciones en memoria");
         await saveDefinitionsToMemory(definitions);
+        return definitions;
     }
 };

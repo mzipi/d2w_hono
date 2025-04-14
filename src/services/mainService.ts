@@ -16,7 +16,7 @@ import {
     filterStatGroupHashes
 } from '../helpers/helpers.ts';
 
-export default async function main(trait1, trait2, currentPage) {
+export default async function main(trait1, trait2) {
     const plugSets = await getDefinition('DestinyPlugSetDefinition');
     const { weapons, perks } = await processInventoryItems();
     const traitHash1 = await searchTraitHash(trait1, perks);
@@ -32,9 +32,7 @@ export default async function main(trait1, trait2, currentPage) {
     const categoriesFound = await findWeaponsByCategory(weaponsFound);
     const ammoFound = await filterItemPresentation(collectiblesFound);
     const statGroupFound = await filterStatGroupHashes(weaponsFound);
-    const itemsPerPage = 1;
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
+
     const formattedResponse = formatResponse({
         weaponsFound,
         plugSetsFound,
@@ -48,15 +46,6 @@ export default async function main(trait1, trait2, currentPage) {
         ammoFound,
         statGroupFound,
     });
-    const weaponKeys = Object.keys(formattedResponse);
-    const keysForCurrentPage = weaponKeys.slice(startIndex, endIndex);
-    const paginatedWeapons = keysForCurrentPage.reduce((acc, key) => {
-        acc[key] = formattedResponse[key];
-        return acc;
-    }, {});
 
-    return {
-        total: Object.keys(formattedResponse).length,
-        paginatedWeapons,
-    };
+    return formattedResponse;
 }

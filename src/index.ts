@@ -1,15 +1,13 @@
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
-import { router as apiRoutes } from './routes/api.ts'
-import { processManifest } from './utils/processManifest.ts'
+import { apiRoutes } from './routes/api.ts'
+
 import dotenv from 'dotenv';
 
 dotenv.config();
 
 const app = new Hono()
-
-await processManifest();
 
 app.use('*', (c, next) => {
     console.log(`Petición ${c.req.method} a ${c.req.url}`);
@@ -17,6 +15,7 @@ app.use('*', (c, next) => {
 });
 
 app.use('*', cors())
+
 // app.use(
 //     '*',
 //     cors({
@@ -30,7 +29,7 @@ app.use('*', cors())
 //     })
 // )
 
-app.route('/api', apiRoutes);
+apiRoutes(app);
 
 serve({
     fetch: app.fetch,

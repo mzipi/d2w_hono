@@ -81,34 +81,41 @@ export default function formatResponse(data) {
             if (!socketEntry) {
                 return;
             }
-
+        
             const plugSetHash = socketEntry.randomizedPlugSetHash || socketEntry.reusablePlugSetHash;
             const plugSet = plugSetsFound[plugSetHash];
-
+        
             const list = [];
-
+        
             if (plugSet && plugSet.reusablePlugItems) {
                 for (const plug of plugSet.reusablePlugItems) {
                     const plugItem = plugItemFound[plug.plugItemHash];
                     if (!plugItem) {
                         continue;
                     }
-
+        
                     if (index === 7) {
                         const validHashes = new Set((masterWorks || []).map(mw => mw.hash));
                         if (!validHashes.has(plugItem.hash)) {
                             continue;
                         }
                     }
-
-                    if (markAsMod) {
+        
+                    if (index === 6) {
+                        const isAdeptWeapon = weapon.displayProperties.name.toLowerCase().includes('adepto');
+                        const isAdeptMod = plugItem.displayProperties.name.toLowerCase().includes('adepto');
+        
+                        if (!isAdeptWeapon && isAdeptMod) {
+                            continue;
+                        }
+        
                         plugItem.wrappedInDiv = true;
                     }
-
+        
                     list.push(plugItem);
                 }
             }
-
+        
             targetArray.push(list);
         };
 
